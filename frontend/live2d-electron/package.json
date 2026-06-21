@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "main": "main.js",
   "scripts": {
-    "start": "ELECTRON_ENABLE_TRANSPARENT_VISUALS=1 electron --enable-transparent-visuals --disable-gpu --disable-gpu-compositing ."
+    "start": "ELECTRON_ENABLE_TRANSPARENT_VISUALS=1 electron --enable-transparent-visuals .",
+    "start:software": "LIVE2D_DISABLE_GPU=1 ELECTRON_ENABLE_TRANSPARENT_VISUALS=1 electron --enable-transparent-visuals ."
   },
   "devDependencies": {
     "electron": "^31.0.0"

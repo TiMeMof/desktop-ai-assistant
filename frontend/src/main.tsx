@@ -10,7 +10,14 @@ import { captureSelectedText } from "./clipboard";
 import { Live2DAssistant } from "./Live2DAssistant";
 import { SettingsPanel } from "./SettingsPanel";
 import { configureMouseTrigger } from "./mouseTrigger";
-import type { AssistantStreamResult, AssistantSuggestion, ChatMessage, ConfigSummary, UserSettings } from "./types";
+import type {
+  AssistantEvent,
+  AssistantStreamResult,
+  AssistantSuggestion,
+  ChatMessage,
+  ConfigSummary,
+  UserSettings
+} from "./types";
 import "./styles.css";
 
 type Status = "checking" | "ready" | "capturing" | "streaming" | "error";

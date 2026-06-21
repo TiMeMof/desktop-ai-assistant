@@ -9,6 +9,7 @@
 ```text
 Desktop UI / Native input
   Tauri 2 + React + TypeScript + Rust
+  transparent bubble window
         |
         | HTTP/SSE on 127.0.0.1:8732
         v
@@ -18,6 +19,12 @@ Local daemon
         | OpenAI-compatible / Ollama / native provider API
         v
 Model provider
+
+Live2D Presentation (Electron)
+  Electron + Chromium + pixi-live2d-display
+  transparent frameless always-on-top window
+        ^
+        | BroadcastChannel("assistant_events") from Tauri window
 ```
 
 ## Main Flow
@@ -31,6 +38,7 @@ keyboard shortcut or Ubuntu X11 side button
   -> daemon builds prompt from character + action + injection profile + memory
   -> daemon streams provider output
   -> React renders result in bubble
+  -> React broadcasts assistant_event to Electron Live2D window
   -> daemon stores successful turn in local memory
 ```
 
@@ -43,29 +51,31 @@ chat input in bubble
   -> daemon builds prompt from character + injection profile + memory + recent chat messages
   -> daemon streams provider output
   -> React renders chat message
+  -> React broadcasts assistant_event to Electron Live2D window
   -> daemon stores successful chat turn in local memory
 ```
 
 ## Core Boundaries
 
-- **Frontend UI** owns presentation, settings form, action selector, chat panel, and stream rendering.
-- **Tauri/Rust** owns native OS integration: copy simulation, window behavior, keyboard/mouse trigger bridge.
+- **Frontend UI** owns presentation, settings form, action selector, chat panel, and stream rendering in the Tauri bubble window.
+- **Tauri/Rust** owns native OS integration: copy simulation, window behavior, keyboard/mouse trigger bridge for the main bubble window.
 - **FastAPI daemon** owns model calls, prompt construction, config loading, API keys, memory, and provider abstraction.
 - **YAML config** owns editable actions, characters, providers, and prompt injection profiles.
 - **Assistant event protocol** carries Live2D-ready state, speech, motion, and follow-up suggestions from daemon results to frontend presentation.
-- **`.env`** owns secrets.
+- **Electron Live2D window** owns model rendering only; it receives events from the Tauri window via `BroadcastChannel` and must not touch daemon or memory directly.
+- **`.env`** owns secrets and Live2D asset URLs.
 
 ## Module Index
 
 Read only the modules needed for the current task:
 
-- `struct/modules/frontend.md`: React UI, settings, shortcuts, streaming display.
+- `struct/modules/frontend.md`: React UI, settings, shortcuts, streaming display, and `BroadcastChannel` event broadcast.
 - `struct/modules/tauri-rust.md`: Tauri shell, Rust commands, X11 side-button hook.
 - `struct/modules/daemon.md`: FastAPI API, config reload, request lifecycle.
 - `struct/modules/config.md`: YAML/user settings/env files.
 - `struct/modules/providers.md`: provider protocol and built-in model platforms.
 - `struct/modules/prompt-memory.md`: prompt construction, prompt injection YAML, memory.
-- `struct/modules/live2d.md`: Live2D-ready assistant event protocol and presentation boundaries.
+- `struct/modules/live2d.md`: Electron Live2D window, assistant event protocol, and presentation boundaries.
 - `struct/todo.md`: prioritized future work.
 
 ## Current Platform Support
@@ -78,5 +88,6 @@ Read only the modules needed for the current task:
 
 - Do not put model/provider/prompt/memory logic in the frontend.
 - Do not put OS input hooks in the daemon.
-- Keep Live2D replacement feasible by treating the current bubble as a replaceable presentation layer.
+- Keep the Tauri bubble window and the Electron Live2D window as loosely coupled presentation layers; communicate only through the `assistant_event` `BroadcastChannel`.
+- Keep Live2D rendering out of the Tauri WebView on Linux/NVIDIA stacks to avoid WebKitGTK WebGL 2 texture issues.
 - Keep secrets out of YAML and frontend state.

@@ -18,5 +18,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   endDrag: () => {
     isDragging = false;
-  }
+  },
+  platform: process.platform,
+  setFocusable: (focusable) => ipcRenderer.invoke("window-focusable", focusable),
+  captureSelectedText: (restoreClipboard = true) => ipcRenderer.invoke("capture-selected-text", restoreClipboard),
+  readClipboardText: () => ipcRenderer.invoke("read-clipboard-text")
 });

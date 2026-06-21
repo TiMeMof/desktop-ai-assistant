@@ -2,7 +2,7 @@
   "provider_id": "deepseek",
   "character_id": "maid",
   "prompt_profile_id": "default",
-  "shortcut": "Ctrl+Shift+Space",
+  "shortcut": "Ctrl+Space",
   "language": "zh-CN",
   "model_overrides": {
     "deepseek": "deepseek-v4-flash"

@@ -163,6 +163,7 @@ function settingsLabels(language: string) {
 }
 
 export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
+  const hasTauriRuntime = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
   const [activeTab, setActiveTab] = useState<SettingsTab>("model");
   const [providerId, setProviderId] = useState(settings.provider_id);
   const [characterId, setCharacterId] = useState(settings.character_id);
@@ -207,10 +208,22 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
   }, [providerId, provider?.model, settings.model_overrides]);
 
   useEffect(() => {
+    if (!hasTauriRuntime) {
+      setMouseStatus({
+        available: false,
+        backend: "unavailable",
+        message: labels.mouseUnavailable,
+        active: false,
+        recording: false,
+        grabbed_button: null,
+        last_error: null
+      });
+      return;
+    }
     getMouseTriggerStatus()
       .then(setMouseStatus)
       .catch((err) => setError(err instanceof Error ? err.message : String(err)));
-  }, []);
+  }, [hasTauriRuntime, labels.mouseUnavailable]);
 
   useEffect(() => {
     if (activeTab !== "memory") return;
@@ -218,6 +231,7 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
   }, [activeTab]);
 
   useEffect(() => {
+    if (!hasTauriRuntime) return;
     const cleanup = listen<MouseTriggerRecorded>("mouse-trigger-recorded", (event) => {
       setMouseButton(event.payload.button);
       setRecordingMouse(false);
@@ -229,9 +243,10 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
     return () => {
       cleanup.then((unlisten) => unlisten()).catch(() => undefined);
     };
-  }, [mouseConsume, mouseEnabled]);
+  }, [hasTauriRuntime, mouseConsume, mouseEnabled]);
 
   useEffect(() => {
+    if (!hasTauriRuntime) return;
     const cleanup = listen<string>("mouse-trigger-error", (event) => {
       setError(event.payload);
       getMouseTriggerStatus().then(setMouseStatus).catch(() => undefined);
@@ -239,7 +254,7 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
     return () => {
       cleanup.then((unlisten) => unlisten()).catch(() => undefined);
     };
-  }, []);
+  }, [hasTauriRuntime]);
 
   async function submit() {
     setSaving(true);
@@ -270,8 +285,10 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
         api_keys: apiKeys,
         api_secrets: apiSecrets
       });
-      await configureMouseTrigger({ enabled: mouseEnabled, button: mouseButton, consume: mouseConsume });
-      await getMouseTriggerStatus().then(setMouseStatus).catch(() => undefined);
+      if (hasTauriRuntime) {
+        await configureMouseTrigger({ enabled: mouseEnabled, button: mouseButton, consume: mouseConsume });
+        await getMouseTriggerStatus().then(setMouseStatus).catch(() => undefined);
+      }
       onSaved(next);
       onClose();
     } catch (err) {
@@ -421,7 +438,7 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
 
   async function recordMouseButton() {
     setError("");
-    if (!mouseStatus?.available) {
+    if (!hasTauriRuntime || !mouseStatus?.available) {
       setError(mouseStatus?.message ?? labels.mouseUnavailable);
       return;
     }

@@ -612,6 +612,7 @@ select:disabled,
 }
 
 .live2d-window {
+  position: relative;
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -631,3 +632,204 @@ select:disabled,
   font-size: 14px;
 }
 
+.live2d-chat-bubble {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: grid;
+  gap: 8px;
+  max-height: min(300px, calc(100vh - 28px));
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+  color: #172033;
+}
+
+.live2d-chat-bubble header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+
+.live2d-chat-bubble header > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.live2d-quick-action {
+  display: inline-grid;
+  grid-template-columns: auto minmax(78px, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  color: #475569;
+  font-size: 12px;
+}
+
+.live2d-quick-action select {
+  min-width: 0;
+  height: 28px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.live2d-chat-bubble header button,
+.live2d-chat-composer button {
+  display: grid;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+}
+
+.live2d-chat-bubble header button {
+  width: 28px;
+  height: 28px;
+}
+
+.live2d-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 44px;
+  max-height: 112px;
+  overflow: auto;
+}
+
+.live2d-action-result {
+  display: grid;
+  gap: 7px;
+  max-height: 146px;
+  overflow: auto;
+}
+
+.live2d-action-result details {
+  color: #475569;
+  font-size: 12px;
+}
+
+.live2d-action-result summary {
+  cursor: pointer;
+}
+
+.live2d-action-result pre {
+  margin: 0;
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: #eef2f7;
+  color: #111827;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.live2d-action-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.live2d-action-suggestions button {
+  min-height: 26px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.live2d-chat-empty {
+  color: #64748b;
+  font-size: 12px;
+  padding: 12px 4px;
+  text-align: center;
+}
+
+.live2d-chat-message {
+  display: grid;
+  gap: 3px;
+  max-width: 92%;
+}
+
+.live2d-chat-message.user {
+  align-self: flex-end;
+}
+
+.live2d-chat-message.assistant {
+  align-self: flex-start;
+}
+
+.live2d-chat-message div {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.live2d-chat-message pre {
+  margin: 0;
+  padding: 8px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.live2d-chat-message.user pre {
+  background: #dbeafe;
+}
+
+.live2d-chat-message.assistant pre {
+  background: #eef2f7;
+}
+
+.live2d-chat-error {
+  padding: 7px 8px;
+  border: 1px solid #fecdd3;
+  border-radius: 7px;
+  background: #fff1f2;
+  color: #9f1239;
+  font-size: 12px;
+}
+
+.live2d-chat-composer {
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  gap: 8px;
+}
+
+.live2d-chat-composer textarea {
+  min-width: 0;
+  width: 100%;
+  min-height: 54px;
+  max-height: 92px;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.live2d-chat-composer button {
+  align-self: stretch;
+}

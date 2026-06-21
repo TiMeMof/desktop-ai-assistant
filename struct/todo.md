@@ -3,11 +3,11 @@
 ## P2: Desktop Shell and Live2D Readiness
 
 - Extract assistant runtime state from `main.tsx` into a UI-independent controller/hook.
-- Keep bubble UI and future Live2D UI as replaceable presentation layers.
-- Add a minimal event bus contract:
-  - trigger action;
-  - show result;
-  - route chat/action done events to Live2D.
+- Keep the Tauri bubble UI and the Electron Live2D UI as loosely coupled replaceable presentation layers.
+- Harden the `BroadcastChannel` event contract between the Tauri bubble and the Electron Live2D window:
+  - typed `assistant_event` payload;
+  - graceful handling when the Live2D window is closed;
+  - optional Electron window lifecycle management from the Tauri window.
 - Decide whether chat sessions should persist across daemon restarts.
 
 ## P2: Cross-Platform Input
@@ -22,6 +22,11 @@
   - prefer system shortcut mapping or input-remapper;
   - avoid promising global raw mouse hooks across compositors.
 
+## P2: Live2D Cleanup
+
+- Electron Live2D window emits a `GPU stall due to ReadPixels` performance warning at startup; it does not affect functionality.
+- `frontend/public/webgl_check.html` is a temporary WebGL diagnostic page and can be removed once the Electron Live2D path is stable.
+
 ## P2: Testing
 
 - Add daemon tests for:
@@ -33,7 +38,8 @@
   - Settings save payload;
   - shortcut reserved-key validation;
   - provider dropdown count from config;
-  - memory clear action.
+  - memory clear action;
+  - `BroadcastChannel` broadcast after stream completion.
 - Add a script for full local verification:
   - Python unit tests;
   - TypeScript build;
@@ -43,7 +49,8 @@
 
 - Add developer scripts:
   - start daemon;
-  - start frontend;
+  - start Tauri frontend;
+  - start Electron Live2D window;
   - run all checks.
 - Decide packaging strategy:
   - dev-only mode;
@@ -52,5 +59,6 @@
 - Add log files and debug panel:
   - daemon request errors;
   - provider errors;
-  - shortcut/mouse trigger events.
+  - shortcut/mouse trigger events;
+  - Live2D window state and event delivery.
 - Add config migration for future `user_settings.json` schema changes.

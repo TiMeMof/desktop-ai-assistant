@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "tauri": "tauri",
     "live2d:chrome": "google-chrome --app=http://127.0.0.1:1420/live2d.html --window-size=400,540 --enable-features=VaapiVideoDecoder",
-    "live2d:electron": "cd live2d-electron && npm start"
+    "live2d:electron": "vite --host 127.0.0.1 & VITE_PID=$!; trap 'kill $VITE_PID 2>/dev/null' EXIT INT TERM; cd live2d-electron && npm start",
+    "live2d:electron:software": "vite --host 127.0.0.1 & VITE_PID=$!; trap 'kill $VITE_PID 2>/dev/null' EXIT INT TERM; cd live2d-electron && npm run start:software"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
