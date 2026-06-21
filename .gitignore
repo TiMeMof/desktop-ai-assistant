@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+dist/
+node_modules/
+src-tauri/target/
+*.log
+.env
+debug/
+data/memory/*

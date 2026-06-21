@@ -1,0 +1,19 @@
+daemon:
+  host: 127.0.0.1
+  port: 8732
+
+desktop:
+  shortcut:
+    windows_linux: Ctrl+Shift+Space
+    macos: Command+Shift+Space
+  clipboard_restore: restore_after_capture
+  request_timeout_seconds: 120
+
+defaults:
+  provider_id: ollama-qwen
+  character_id: default
+  prompt_profile_id: default
+  action_id: translate
+
+limits:
+  max_input_chars: 12000

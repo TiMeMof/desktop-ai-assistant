@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+daemon/assistant_daemon/__init__.py
+daemon/assistant_daemon/config.py
+daemon/assistant_daemon/main.py
+daemon/assistant_daemon/prompts.py
+daemon/assistant_daemon/providers.py
+daemon/assistant_daemon/schemas.py
+daemon/desktop_ai_assistant_daemon.egg-info/PKG-INFO
+daemon/desktop_ai_assistant_daemon.egg-info/SOURCES.txt
+daemon/desktop_ai_assistant_daemon.egg-info/dependency_links.txt
+daemon/desktop_ai_assistant_daemon.egg-info/requires.txt
+daemon/desktop_ai_assistant_daemon.egg-info/top_level.txt

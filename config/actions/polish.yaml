@@ -1,0 +1,11 @@
+id: polish
+name: Polish
+labels:
+  zh-CN: 润色
+  en: Polish
+description: Rewrite selected text to be clearer and more natural while preserving meaning.
+user_template: |
+  Polish the following selected text. Preserve meaning, names, numbers, and technical terms.
+
+  Selected text:
+  {{ input_text }}

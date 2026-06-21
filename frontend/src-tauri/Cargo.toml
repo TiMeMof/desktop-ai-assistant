@@ -1,0 +1,18 @@
+[package]
+name = "desktop-ai-assistant"
+version = "0.1.0"
+description = "Desktop AI Assistant"
+authors = ["Desktop AI Assistant"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-http = "2"
+tauri-plugin-window-state = "2"
+x11 = "2.21"

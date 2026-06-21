@@ -1,0 +1,11 @@
+id: explain
+name: Explain
+labels:
+  zh-CN: 解释
+  en: Explain
+description: Explain selected text or an error message briefly.
+user_template: |
+  Explain the following selected text in concise, practical terms. If it is an error, include likely cause and next step.
+
+  Selected text:
+  {{ input_text }}

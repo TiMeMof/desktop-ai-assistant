@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Desktop AI Assistant",
+  "version": "0.1.0",
+  "identifier": "dev.local.desktop-ai-assistant",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "AI Bubble",
+        "width": 460,
+        "height": 520,
+        "minWidth": 360,
+        "minHeight": 420,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "resizable": true,
+        "visible": true,
+        "transparent": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  }
+}
+

@@ -1,0 +1,21 @@
+{
+  "provider_id": "deepseek",
+  "character_id": "default",
+  "prompt_profile_id": "default",
+  "shortcut": "Ctrl+Shift+Space",
+  "language": "zh-CN",
+  "model_overrides": {
+    "deepseek": "deepseek-v4-flash"
+  },
+  "mouse_trigger": {
+    "enabled": true,
+    "button": 8,
+    "consume": true
+  },
+  "memory": {
+    "enabled": true,
+    "max_context_tokens": 3000,
+    "recent_turns": 10,
+    "summary_mode": "deterministic"
+  }
+}

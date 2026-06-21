@@ -1,0 +1,11 @@
+id: translate
+name: Translate
+labels:
+  zh-CN: 翻译
+  en: Translate
+description: Translate selected text to Chinese unless the input is already Chinese, in which case translate it to natural English.
+user_template: |
+  Translate the following selected text. Keep formatting when useful.
+
+  Selected text:
+  {{ input_text }}

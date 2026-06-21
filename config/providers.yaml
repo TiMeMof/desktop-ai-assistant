@@ -1,0 +1,132 @@
+providers:
+  - id: openai
+    name: OpenAI
+    type: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    model: gpt-4.1-mini
+    context_size: 1047576
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: gemini
+    name: Google Gemini
+    type: openai_compatible
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    api_key_env: GEMINI_API_KEY
+    model: gemini-3.5-flash
+    context_size: 1048576
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: anthropic
+    name: Anthropic Claude
+    type: anthropic
+    base_url: https://api.anthropic.com/v1
+    api_key_env: ANTHROPIC_API_KEY
+    model: claude-sonnet-4-5
+    context_size: 200000
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: openrouter
+    name: OpenRouter
+    type: openai_compatible
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: openai/gpt-4.1-mini
+    context_size: 1047576
+    env_headers:
+      HTTP-Referer: OPENROUTER_HTTP_REFERER
+      X-Title: OPENROUTER_X_TITLE
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: dashscope-qwen
+    name: Alibaba DashScope Qwen
+    type: openai_compatible
+    base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    model: qwen-plus
+    context_size: 131072
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: baidu-qianfan
+    name: Baidu Qianfan
+    type: baidu_qianfan
+    base_url: https://aip.baidubce.com
+    api_key_env: BAIDU_QIANFAN_API_KEY
+    api_secret_env: BAIDU_QIANFAN_SECRET_KEY
+    model: ernie-4.0-turbo-8k
+    context_size: 8192
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: kimi
+    name: Kimi
+    type: openai_compatible
+    base_url: https://api.moonshot.cn/v1
+    api_key_env: MOONSHOT_API_KEY
+    model: kimi-k2.6
+    context_size: 262144
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: local-vllm
+    name: Local vLLM
+    type: openai_compatible
+    base_url: http://127.0.0.1:8000/v1
+    api_key_env: OPENAI_API_KEY
+    model: Qwen/Qwen3-4B-Instruct-2507
+    context_size: 32768
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: deepseek
+    name: DeepSeek
+    type: openai_compatible
+    base_url: https://api.deepseek.com
+    api_key_env: DEEPSEEK_API_KEY
+    model: deepseek-v4-flash
+    context_size: 65536
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: siliconflow
+    name: SiliconFlow
+    type: openai_compatible
+    base_url: https://api.siliconflow.cn/v1
+    api_key_env: SILICONFLOW_API_KEY
+    model: deepseek-ai/DeepSeek-V3.2
+    context_size: 65536
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: bigmodel
+    name: Zhipu BigModel
+    type: openai_compatible
+    base_url: https://open.bigmodel.cn/api/paas/v4
+    api_key_env: BIGMODEL_API_KEY
+    model: glm-5.2
+    context_size: 131072
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: lmstudio
+    name: LM Studio
+    type: openai_compatible
+    base_url: http://127.0.0.1:1234/v1
+    api_key_env: LMSTUDIO_API_KEY
+    model: local-model
+    context_size: 8192
+    temperature: 0.3
+    max_tokens: 1200
+
+  - id: ollama-qwen
+    name: Ollama Qwen
+    type: ollama
+    base_url: http://127.0.0.1:11434
+    model: qwen2.5:7b
+    context_size: 32768
+    temperature: 0.3
