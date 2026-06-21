@@ -1,6 +1,6 @@
 {
   "provider_id": "deepseek",
-  "character_id": "default",
+  "character_id": "maid",
   "prompt_profile_id": "default",
   "shortcut": "Ctrl+Shift+Space",
   "language": "zh-CN",

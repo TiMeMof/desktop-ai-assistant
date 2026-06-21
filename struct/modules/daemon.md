@@ -17,6 +17,7 @@
 - Build prompts.
 - Call model providers.
 - Stream model output.
+- Emit deterministic Live2D-ready assistant events on completed action/chat responses.
 - Persist settings and memory.
 - Serve memory preview and provider test APIs.
 - Maintain bounded in-memory chat sessions.
@@ -29,6 +30,9 @@
   - action request lifecycle;
   - chat request lifecycle and in-memory session storage;
   - memory write after successful action.
+
+- `daemon/assistant_daemon/assistant_events.py`
+  - deterministic assistant event payloads for action/chat completion.
 
 - `daemon/assistant_daemon/schemas.py`
   - provider/action/character/prompt/settings/request/response models.
@@ -65,6 +69,7 @@ request
   -> build messages
   -> call provider
   -> stream or return output
+  -> attach assistant_event with state/speech/motion/follow-up suggestions
   -> write memory if allowed
 ```
 
@@ -80,6 +85,7 @@ chat request
   -> build chat messages from character + injection profile + memory + recent session messages
   -> stream provider output
   -> append user/assistant messages to session
+  -> attach assistant_event with chat state/speech/motion
   -> write chat turn to memory if allowed
 ```
 

@@ -132,6 +132,124 @@ footer button {
   overflow: auto;
 }
 
+.live2d-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 10px;
+  align-items: center;
+  min-height: 126px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.live2d-stage {
+  position: relative;
+  width: 112px;
+  height: 108px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #eef2f7;
+}
+
+.live2d-stage.thinking {
+  outline: 1px solid #93c5fd;
+}
+
+.live2d-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.live2d-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  color: #64748b;
+  font-size: 11px;
+  text-align: center;
+}
+
+.live2d-status {
+  min-width: 0;
+  max-height: 56px;
+  overflow: auto;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.live2d-suggestions {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.live2d-suggestions button,
+.live2d-menu button,
+.live2d-input button {
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+}
+
+.live2d-suggestions button {
+  min-height: 26px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.live2d-menu,
+.live2d-input {
+  position: absolute;
+  z-index: 10;
+  right: 8px;
+  top: 8px;
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
+}
+
+.live2d-menu button {
+  height: 28px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.live2d-input {
+  left: 8px;
+  top: auto;
+  bottom: 8px;
+  grid-template-columns: 1fr auto;
+}
+
+.live2d-input textarea {
+  min-width: 0;
+  width: 100%;
+  min-height: 68px;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  padding: 8px;
+}
+
+.live2d-input button {
+  padding: 0 10px;
+}
+
 .status {
   display: flex;
   align-items: center;
@@ -310,7 +428,9 @@ footer button {
 }
 
 button:disabled,
-select:disabled {
+select:disabled,
+.live2d-suggestions button:disabled,
+.live2d-input button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
@@ -490,3 +610,24 @@ select:disabled {
   min-height: 32px;
   padding: 0 10px;
 }
+
+.live2d-window {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.live2d-window canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.live2d-window-fallback {
+  padding: 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+

@@ -108,11 +108,36 @@ export type ChatMessage = {
   streaming?: boolean;
 };
 
-export type ChatStreamResult = {
-  session_id: string;
+export type AssistantSuggestion = {
+  id: string;
+  label: string;
+  kind: "action" | "mode" | "command";
+  action_id?: string | null;
+  mode?: "action" | "chat" | null;
+  command?: string | null;
+  context?: Record<string, unknown>;
+};
+
+export type AssistantEvent = {
+  state: "idle" | "listening" | "thinking" | "presenting" | "asking_followup" | "error" | "chatting";
+  speak_text?: string | null;
+  emotion: "neutral" | "happy" | "thinking" | "confused" | "apologetic";
+  motion: "idle" | "nod" | "wave" | "present_result" | "ask" | "error";
+  suggestions: AssistantSuggestion[];
+  metadata: Record<string, unknown>;
+};
+
+export type AssistantStreamResult = {
   display_text: string;
   speak_text?: string | null;
   emotion?: string | null;
   motion?: string | null;
+  assistant_event?: AssistantEvent | null;
   metadata: Record<string, unknown>;
+};
+
+export type ActionStreamResult = AssistantStreamResult;
+
+export type ChatStreamResult = AssistantStreamResult & {
+  session_id: string;
 };

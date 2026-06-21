@@ -52,6 +52,7 @@ chat input in bubble
 - **Tauri/Rust** owns native OS integration: copy simulation, window behavior, keyboard/mouse trigger bridge.
 - **FastAPI daemon** owns model calls, prompt construction, config loading, API keys, memory, and provider abstraction.
 - **YAML config** owns editable actions, characters, providers, and prompt injection profiles.
+- **Assistant event protocol** carries Live2D-ready state, speech, motion, and follow-up suggestions from daemon results to frontend presentation.
 - **`.env`** owns secrets.
 
 ## Module Index
@@ -64,6 +65,7 @@ Read only the modules needed for the current task:
 - `struct/modules/config.md`: YAML/user settings/env files.
 - `struct/modules/providers.md`: provider protocol and built-in model platforms.
 - `struct/modules/prompt-memory.md`: prompt construction, prompt injection YAML, memory.
+- `struct/modules/live2d.md`: Live2D-ready assistant event protocol and presentation boundaries.
 - `struct/todo.md`: prioritized future work.
 
 ## Current Platform Support

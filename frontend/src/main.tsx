@@ -7,9 +7,10 @@ import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 import { Clipboard, Loader2, MessageSquare, RefreshCw, Send, Settings, X } from "lucide-react";
 import { fetchConfig, health, streamAction, streamChat } from "./api";
 import { captureSelectedText } from "./clipboard";
+import { Live2DAssistant } from "./Live2DAssistant";
 import { SettingsPanel } from "./SettingsPanel";
 import { configureMouseTrigger } from "./mouseTrigger";
-import type { ChatMessage, ChatStreamResult, ConfigSummary, UserSettings } from "./types";
+import type { AssistantStreamResult, AssistantSuggestion, ChatMessage, ConfigSummary, UserSettings } from "./types";
 import "./styles.css";
 
 type Status = "checking" | "ready" | "capturing" | "streaming" | "error";
@@ -95,7 +96,20 @@ function App() {
   const [chatInput, setChatInput] = useState("");
   const [chatSessionId, setChatSessionId] = useState<string | undefined>();
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [assistantEvent, setAssistantEvent] = useState<ChatStreamResult | null>(null);
+  const [assistantEvent, setAssistantEvent] = useState<AssistantStreamResult | null>(null);
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+  if (typeof window !== "undefined" && broadcastChannelRef.current === null) {
+    try {
+      broadcastChannelRef.current = new BroadcastChannel("assistant_events");
+    } catch {
+      broadcastChannelRef.current = null;
+    }
+  }
+  function broadcastAssistantEvent(event?: AssistantEvent | null) {
+    const channel = broadcastChannelRef.current;
+    if (!channel || !event) return;
+    channel.postMessage({ type: "assistant_event", payload: event });
+  }
   const [memoryPaused, setMemoryPaused] = useState(false);
   const [memoryExcludeInput, setMemoryExcludeInput] = useState(false);
   const busyRef = useRef(false);
@@ -124,8 +138,9 @@ function App() {
     setStatus("ready");
   }, []);
 
-  const runText = useCallback(async (text: string, source: string) => {
+  const runText = useCallback(async (text: string, source: string, actionOverride?: string) => {
     const selected = text.trim();
+    const selectedAction = actionOverride ?? actionId;
     await appWindow.show();
     await appWindow.setFocus();
     setInputText(selected);
@@ -135,9 +150,10 @@ function App() {
       return;
     }
     setStatus("streaming");
-    await streamAction(
+    setAssistantEvent(null);
+    const result = await streamAction(
       {
-        action_id: actionId,
+        action_id: selectedAction,
         character_id: settings?.character_id,
         provider_id: settings?.provider_id,
         input_text: selected,
@@ -149,6 +165,9 @@ function App() {
       },
       (delta) => setOutputText((current) => current + delta)
     );
+    setOutputText(result.display_text);
+    setAssistantEvent(result);
+    broadcastAssistantEvent(result.assistant_event);
     setStatus("ready");
   }, [actionId, labels, memoryExcludeInput, memoryPaused, settings?.character_id, settings?.provider_id]);
 
@@ -188,8 +207,8 @@ function App() {
     }
   }, [runText]);
 
-  const sendChat = useCallback(async () => {
-    const message = chatInput.trim();
+  const sendChatMessage = useCallback(async (rawMessage: string) => {
+    const message = rawMessage.trim();
     if (!message || busyRef.current) {
       return;
     }
@@ -227,6 +246,8 @@ function App() {
       );
       setChatSessionId(result.session_id || chatSessionId);
       setAssistantEvent(result);
+      broadcastAssistantEvent(result.assistant_event);
+    broadcastAssistantEvent(result.assistant_event);
       setChatMessages((current) =>
         current.map((item) =>
           item.id === assistantId ? { ...item, content: result.display_text, streaming: false } : item
@@ -238,7 +259,36 @@ function App() {
       setError(err instanceof Error ? err.message : String(err));
       setChatMessages((current) => current.filter((item) => item.id !== assistantId));
     }
-  }, [chatInput, chatSessionId, memoryExcludeInput, memoryPaused, settings?.character_id, settings?.provider_id]);
+  }, [chatSessionId, memoryExcludeInput, memoryPaused, settings?.character_id, settings?.provider_id]);
+
+  const sendChat = useCallback(async () => {
+    const message = chatInput.trim();
+    if (!message) {
+      return;
+    }
+    await sendChatMessage(message);
+  }, [chatInput, sendChatMessage]);
+
+  const runAssistantSuggestion = useCallback((suggestion: AssistantSuggestion) => {
+    if (busyRef.current) {
+      return;
+    }
+    if (suggestion.kind === "mode" && suggestion.mode === "chat") {
+      setMode("chat");
+      return;
+    }
+    if (suggestion.kind !== "action" || !suggestion.action_id) {
+      return;
+    }
+    const nextInput = suggestion.id === "explain_source" ? inputText : outputText || inputText;
+    setActionId(suggestion.action_id);
+    setMode("action");
+    setOutputText("");
+    runText(nextInput, "assistant_suggestion", suggestion.action_id).catch((err) => {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : String(err));
+    });
+  }, [inputText, outputText, runText]);
 
   const resetChat = useCallback(() => {
     setChatMessages([]);
@@ -255,6 +305,10 @@ function App() {
 
   const openContextSettings = useCallback((event: React.MouseEvent) => {
     event.preventDefault();
+    setSettingsOpen(true);
+  }, []);
+
+  const openSettings = useCallback(() => {
     setSettingsOpen(true);
   }, []);
 
@@ -343,6 +397,18 @@ function App() {
       </section>
 
       <section className="content">
+        <Live2DAssistant
+          event={assistantEvent?.assistant_event}
+          busy={busy}
+          language={settings?.language}
+          onSubmitChat={(message) => {
+            setMode("chat");
+            sendChatMessage(message);
+          }}
+          onRunSuggestion={runAssistantSuggestion}
+          onOpenSettings={openSettings}
+        />
+
         <div className="status">
           {busy && <Loader2 className="spin" size={15} />}
           <span>{status === "ready" ? `${labels.ready}: ${shortcut}` : status}</span>
@@ -362,6 +428,11 @@ function App() {
             <pre className="output">
               {outputText || labels.selectHint}
             </pre>
+            {assistantEvent && (
+              <div className="assistant-event">
+                {assistantEvent.assistant_event?.state ?? "event"} · {labels.emotion}: {assistantEvent.emotion ?? "none"} · {labels.motion}: {assistantEvent.motion ?? "none"}
+              </div>
+            )}
           </>
         )}
 
@@ -380,7 +451,7 @@ function App() {
             </div>
             {assistantEvent && (
               <div className="assistant-event">
-                {labels.emotion}: {assistantEvent.emotion ?? "none"} · {labels.motion}: {assistantEvent.motion ?? "none"}
+                {assistantEvent.assistant_event?.state ?? "event"} · {labels.emotion}: {assistantEvent.emotion ?? "none"} · {labels.motion}: {assistantEvent.motion ?? "none"}
               </div>
             )}
             <form

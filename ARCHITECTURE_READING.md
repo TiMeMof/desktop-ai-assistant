@@ -14,6 +14,7 @@ Use this file when you need project context with the fewest tokens.
    - YAML/settings/env/schema ownership: `struct/modules/config.md`
    - Model platforms/provider protocol: `struct/modules/providers.md`
    - Prompt injection/memory/context: `struct/modules/prompt-memory.md`
+   - Live2D/presentation event protocol: `struct/modules/live2d.md`
 
 3. Read `struct/todo.md` only when planning roadmap, cleanup, or prioritization.
 
@@ -47,4 +48,3 @@ struct/todo.md if the task changes roadmap or priorities
 ```
 
 Avoid reading every source file upfront unless the task explicitly spans the whole app.
-

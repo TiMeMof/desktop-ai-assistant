@@ -213,12 +213,32 @@ class ChatRequest(BaseModel):
         return value
 
 
+class AssistantSuggestion(BaseModel):
+    id: str
+    label: str
+    kind: Literal["action", "mode", "command"]
+    action_id: str | None = None
+    mode: Literal["action", "chat"] | None = None
+    command: str | None = None
+    context: dict[str, Any] = Field(default_factory=dict)
+
+
+class AssistantEvent(BaseModel):
+    state: Literal["idle", "listening", "thinking", "presenting", "asking_followup", "error", "chatting"]
+    speak_text: str | None = None
+    emotion: Literal["neutral", "happy", "thinking", "confused", "apologetic"] = "neutral"
+    motion: Literal["idle", "nod", "wave", "present_result", "ask", "error"] = "idle"
+    suggestions: list[AssistantSuggestion] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class ChatResponse(BaseModel):
     session_id: str
     display_text: str
     speak_text: str | None = None
     emotion: str | None = None
     motion: str | None = None
+    assistant_event: AssistantEvent | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -254,6 +274,7 @@ class ActionResponse(BaseModel):
     speak_text: str | None = None
     emotion: str | None = None
     motion: str | None = None
+    assistant_event: AssistantEvent | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 

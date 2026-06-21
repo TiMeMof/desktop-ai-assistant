@@ -15,6 +15,7 @@ class ConfigAndPromptTests(unittest.TestCase):
         self.assertIn("explain", self.settings.actions)
         self.assertIn("polish", self.settings.actions)
         self.assertIn("default", self.settings.characters)
+        self.assertIn("maid", self.settings.characters)
         self.assertIn("default", self.settings.prompt_profiles)
         self.assertIn("ollama-qwen", self.settings.providers)
 

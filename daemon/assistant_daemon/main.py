@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
+from .assistant_events import assistant_event_for_action, assistant_event_for_chat, done_payload
 from .config import ConfigError, Settings
 from .memory import MemoryStore
 from .prompts import build_chat_messages, build_messages
@@ -314,7 +315,15 @@ async def run_action(request: ActionRequest) -> ActionResponse:
         provider_id,
         {"mode": "run"},
     )
-    return ActionResponse(display_text=text, metadata={"provider_id": provider_id})
+    assistant_event = assistant_event_for_action(request.action_id, provider_id)
+    return ActionResponse(
+        display_text=text,
+        speak_text=assistant_event.speak_text,
+        emotion=assistant_event.emotion,
+        motion=assistant_event.motion,
+        assistant_event=assistant_event,
+        metadata={"provider_id": provider_id},
+    )
 
 
 def _sse(event: str, data: dict) -> str:
@@ -347,16 +356,15 @@ async def stream_chat(request: ChatRequest) -> StreamingResponse:
                 provider_id,
                 {"mode": "chat", "session_id": session.session_id},
             )
+            assistant_event = assistant_event_for_chat(display_text, session.session_id, provider_id)
             yield _sse(
                 "done",
-                {
-                    "session_id": session.session_id,
-                    "display_text": display_text,
-                    "speak_text": display_text,
-                    "emotion": "neutral",
-                    "motion": "idle",
-                    "metadata": {"provider_id": provider_id, "session_id": session.session_id},
-                },
+                done_payload(
+                    display_text,
+                    {"provider_id": provider_id, "session_id": session.session_id},
+                    assistant_event,
+                    session.session_id,
+                ),
             )
         except ProviderError as exc:
             yield _sse("error", {"message": str(exc), "session_id": session.session_id})
@@ -386,7 +394,11 @@ async def stream_action(request: ActionRequest) -> StreamingResponse:
                 provider_id,
                 {"mode": "stream"},
             )
-            yield _sse("done", {"display_text": display_text, "metadata": {"provider_id": provider_id}})
+            assistant_event = assistant_event_for_action(request.action_id, provider_id)
+            yield _sse(
+                "done",
+                done_payload(display_text, {"provider_id": provider_id}, assistant_event),
+            )
         except ProviderError as exc:
             yield _sse("error", {"message": str(exc)})
 

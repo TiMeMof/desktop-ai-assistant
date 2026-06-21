@@ -27,6 +27,7 @@
 - `frontend/src/main.tsx`
   - app state;
   - Action/Chat mode state;
+  - Live2D assistant event handoff and suggestion handling;
   - action selector;
   - chat messages and current chat session ID;
   - trigger handling;
@@ -46,6 +47,12 @@
 
 - `frontend/src/api.ts`
   - daemon HTTP/SSE client.
+
+- `frontend/src/Live2DAssistant.tsx`
+  - Live2D presentation adapter;
+  - right-click Live2D menu;
+  - quick chat input popup;
+  - suggestion button rendering.
 
 - `frontend/src/clipboard.ts`
   - selected-text capture through clipboard.
@@ -76,7 +83,11 @@ chat submit
   -> keep done payload for future Live2D consumers
 ```
 
-Current Live2D-ready done payload fields:
+Action and chat done events can carry a shared Live2D-ready `assistant_event` payload. The frontend stores the event for presentation consumers while still rendering the streamed result text normally.
+
+The current Live2D adapter loads a real model only when `VITE_LIVE2D_MODEL_URL` is configured. Without a model URL it renders a compact status fallback, so action/chat event handling can be verified before model assets are added.
+
+Legacy top-level Live2D-ready done payload fields:
 
 - `speak_text`
 - `emotion`

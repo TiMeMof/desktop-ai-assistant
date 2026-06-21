@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>WebGL Check</title></head>
+<body style="font-family:monospace;padding:20px">
+<h2>WebGL Check</h2>
+<pre id="out">checking...</pre>
+<canvas id="c" width="200" height="100" style="border:1px solid #000"></canvas>
+<script>
+const out = document.getElementById('out');
+const c = document.getElementById('c');
+try {
+  const gl = c.getContext('webgl2') || c.getContext('webgl');
+  if (!gl) { out.textContent = 'WebGL: NOT AVAILABLE'; }
+  else {
+    out.textContent = 'WebGL: OK\nVersion: ' + gl.getParameter(gl.VERSION) +
+      '\nRenderer: ' + gl.getParameter(gl.RENDERER) +
+      '\nVendor: ' + gl.getParameter(gl.VENDOR);
+  }
+} catch (e) { out.textContent = 'WebGL error: ' + e.message; }
+</script></body></html>
