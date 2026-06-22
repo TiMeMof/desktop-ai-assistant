@@ -4,10 +4,10 @@ Local desktop AI assistant prototype with a Tauri 2 desktop shell, a Python Fast
 
 ## What It Does
 
-- Select text in another app and trigger AI actions from a global shortcut or Ubuntu X11 mouse side button.
+- Select text in another app and trigger AI actions from a global shortcut, Ubuntu X11 mouse side button, or the Live2D Electron window.
 - Supports actions: translate, explain, polish.
 - Streams results into a small always-on-top bubble window.
-- When Live2D is configured, the assistant avatar is rendered in a separate transparent Electron window and reacts to the assistant state/motion/emotion.
+- When Live2D is configured, the assistant avatar is rendered in a separate transparent Electron window, reacts to assistant state/motion/emotion, and can act as a compact interaction surface.
 - Uses Settings for model provider, API key, character, prompt profile, shortcut, mouse trigger, language, and memory.
 
 ## Install Daemon
@@ -30,6 +30,14 @@ sudo apt install -y libwebkit2gtk-4.1-dev librsvg2-dev build-essential curl wget
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
 ```
+
+For Live2D Electron double-click selected-text capture on Linux, install one safe primary-selection reader:
+
+```bash
+sudo apt install -y xclip
+```
+
+`wl-clipboard` or `xsel` also work. If none is installed, the Live2D window falls back to the current clipboard text and does not send `Ctrl+C`.
 
 If Rust download fails:
 
@@ -62,16 +70,18 @@ If you do not configure a model URL, the Tauri bubble still works and the Electr
 
 ## Runtime
 
-Three processes run together in dev mode:
+Three processes run together in dev mode. `npm run live2d:electron` starts the Vite dev server for the Live2D page before launching Electron.
 
 ```text
 +--------------------------+        +--------------------------+
 |  Tauri bubble window     |        |  Electron Live2D window  |
 |  React UI / shortcuts    |  BC    |  transparent avatar      |
-|  chat / suggestions      | -----> |  motion / emotion          |
+|  chat / suggestions      | -----> |  motion / emotion        |
 +----------+---------------+        +-----------+--------------+
-           |                                      ^
+           |                                      |
            | BroadcastChannel("assistant_events") |
+           |                                      v
+           |                         Live2D click / chat / settings
            |                                      |
            v                                      |
 +--------------------------+                      |
@@ -86,7 +96,7 @@ Three processes run together in dev mode:
 
 - The Tauri bubble window talks to the daemon over HTTP/SSE.
 - When an action or chat finishes, the Tauri window broadcasts the `assistant_event` to the Electron Live2D window over `BroadcastChannel`.
-- The Electron Live2D window only renders the avatar; it never calls the daemon or reads memory directly.
+- The Electron Live2D window can also call the daemon directly for its own click/chat/settings flows. Prompt construction and memory still remain daemon-owned.
 
 ## Run the App
 
@@ -100,18 +110,18 @@ cd desktop-ai-assistant
 uvicorn assistant_daemon.main:app --reload --host 127.0.0.1 --port 8732
 ```
 
-**Terminal 2 — Tauri bubble window:**
 
-```bash
-cd desktop-ai-assistant/frontend
-npm run tauri dev
-```
-
-**Terminal 3 — Electron Live2D window:**
+**Terminal 2 — Electron Live2D window:**
 
 ```bash
 cd desktop-ai-assistant/frontend
 npm run live2d:electron
+```
+
+Use the software-rendering fallback only if the normal Electron window fails to display:
+
+```bash
+npm run live2d:electron:software
 ```
 
 Alternatively, you can run the Live2D window in Chrome app mode for quick testing:
@@ -149,11 +159,20 @@ sudo sysctl --system
 
 The footer button `Run clipboard` runs the current action on clipboard text.
 
+Live2D Electron controls:
+
+- Single left-click the model: open the Live2D chat bubble. The assistant first asks what you want to do, using the current clipboard and recent local conversation as lightweight context.
+- Double left-click the model: run the selected quick action on selected text or clipboard fallback. The quick action can be switched in the bubble between translate, explain, and polish.
+- Drag the model: move the Electron window.
+- Right-click the model: open Settings inside the Electron window.
+
 When an action or chat completes, the Tauri bubble shows status text and suggestion buttons, and the Electron Live2D window plays the corresponding motion/expression if configured.
 
 ## Settings
 
 Open Settings by right-clicking the bubble window or clicking the titlebar settings button.
+
+In the Live2D Electron window, right-click the model to open the same settings panel. Tauri-only mouse side-button recording is disabled in Electron, but model, provider, API key, character, language, memory, import/export, and provider test settings are available.
 
 Settings include:
 
@@ -185,6 +204,20 @@ Built-in providers are configured in `config/providers.yaml`:
 - Ollama
 
 Fill API keys in Settings or `.env`.
+
+## Future Agent Tools
+
+OpenInterpreter, OpenClaw, or similar computer-control tools should be integrated behind the Python daemon, not directly inside Tauri or Electron renderers.
+
+Recommended shape:
+
+- add a daemon action or endpoint such as `agent_execute` / `/v1/agent/stream`;
+- wrap the selected tool through a subprocess, SDK, or protocol adapter;
+- stream logs, tool events, confirmations, and final output over SSE;
+- require explicit confirmation for filesystem, shell, browser, mouse, or keyboard actions;
+- keep workspace, timeout, cancellation, and destructive-command policy in the daemon.
+
+This keeps Live2D and AI Bubble as presentation surfaces while the daemon owns execution policy, secrets, logs, and memory.
 
 ## Verify
 
