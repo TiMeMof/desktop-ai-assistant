@@ -59,14 +59,41 @@ cd ..
 
 ## Avatar Assets
 
-The Electron avatar window defaults to `presentation.renderer=fbx` and uses FBX 3D assets from `frontend/fbx`. The first idle model is about 41 MB, so the avatar may take a few seconds to appear on first load. Live2D remains available as a fallback renderer and uses the bundled Haru model plus a local Cubism Core. Configure Live2D in `frontend/.env` (copy from `frontend/.env.example`):
+The avatar window is optional. The daemon and Tauri bubble can run without it. If you want the desktop character, start the Electron avatar window and provide one of the supported presentation renderers.
+
+Supported avatar formats:
+
+- **FBX 3D**: default renderer.
+- **Live2D Cubism 4**: selectable fallback renderer.
+
+Unsupported avatar formats:
+
+- **OBJ is not used at runtime.** There is no OBJ renderer or OBJ animation pipeline in the current app.
+- GLTF/VRM/PMX are also not wired up yet.
+
+The Electron avatar window defaults to `presentation.renderer=fbx` and uses FBX 3D assets from `frontend/fbx`. The current FBX renderer expects one FBX file per motion, with these filenames:
+
+```text
+frontend/fbx/待机1.fbx      # idle / chatting, looped
+frontend/fbx/待机2.fbx      # nod, one-shot
+frontend/fbx/蓄力出拳.fbx   # ask, one-shot
+frontend/fbx/落地.fbx       # present_result, one-shot
+frontend/fbx/受击倒地.fbx   # error, one-shot
+frontend/fbx/回旋踢.fbx     # wave, one-shot
+```
+
+Each FBX should contain the mesh and its first animation clip. One-shot motions return to `待机1.fbx` after playback. The first idle model is about 41 MB, so the avatar may take a few seconds to appear on first load.
+
+Live2D remains available as a fallback renderer and uses a Cubism 4 `model3.json` entry file. The repository includes the Haru sample model under `frontend/public/live2d/models/haru` plus a local Cubism Core. A Live2D model directory should include the normal Cubism files referenced by `model3.json`, such as `.moc3`, textures, motions, expressions, physics, and pose files.
+
+Configure Live2D in `frontend/.env` (copy from `frontend/.env.example`):
 
 ```text
 VITE_LIVE2D_MODEL_URL=/live2d/models/haru/haru_greeter_t03.model3.json
 VITE_LIVE2D_CORE_URL=/live2d/cubismcore/live2dcubismcore.min.js
 ```
 
-If you select Live2D without configuring a model URL, the Tauri bubble still works and the Electron window shows a fallback message.
+Select the renderer in Settings -> Advanced -> Presentation. If you select Live2D without configuring a model URL, the Tauri bubble still works and the Electron window shows a fallback message. If FBX files are missing or fail to load, the avatar window may remain blank or keep the last loaded idle state while the console logs the loading error.
 
 ## Runtime
 
