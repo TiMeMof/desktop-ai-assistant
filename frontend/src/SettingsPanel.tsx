@@ -77,6 +77,7 @@ function settingsLabels(language: string) {
       outputLanguage: "输出语言",
       pressShortcut: "按下快捷键...",
       pressSideButton: "按下侧键",
+      presentationRenderer: "展示方式",
       promptProfile: "提示注入配置",
       rawRecentTurns: "最近原始轮数",
       record: "录制",
@@ -138,6 +139,7 @@ function settingsLabels(language: string) {
     outputLanguage: "Output language",
     pressShortcut: "Press shortcut...",
     pressSideButton: "Press side button",
+    presentationRenderer: "Presentation",
     promptProfile: "Prompt injection profile",
     rawRecentTurns: "Raw recent turns",
     record: "Record",
@@ -184,6 +186,9 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
   const [memoryRecentTurns, setMemoryRecentTurns] = useState(settings.memory.recent_turns);
   const [memorySummaryMode, setMemorySummaryMode] = useState<"deterministic" | "model">(
     settings.memory.summary_mode ?? "deterministic"
+  );
+  const [presentationRenderer, setPresentationRenderer] = useState<"fbx" | "live2d">(
+    settings.presentation?.renderer ?? "fbx"
   );
   const [memoryPreview, setMemoryPreview] = useState<MemoryPreview | null>(null);
   const [providerTest, setProviderTest] = useState("");
@@ -282,6 +287,7 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
           recent_turns: memoryRecentTurns,
           summary_mode: memorySummaryMode
         },
+        presentation: { renderer: presentationRenderer },
         api_keys: apiKeys,
         api_secrets: apiSecrets
       });
@@ -350,7 +356,8 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
         max_context_tokens: memoryBudget,
         recent_turns: memoryRecentTurns,
         summary_mode: memorySummaryMode
-      }
+      },
+      presentation: { renderer: presentationRenderer }
     };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const anchor = document.createElement("a");
@@ -381,6 +388,9 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
         setMemoryBudget(Number(imported.memory.max_context_tokens ?? defaultMemory.max_context_tokens));
         setMemoryRecentTurns(Number(imported.memory.recent_turns ?? defaultMemory.recent_turns));
         setMemorySummaryMode(imported.memory.summary_mode === "model" ? "model" : "deterministic");
+      }
+      if (imported.presentation) {
+        setPresentationRenderer(imported.presentation.renderer === "live2d" ? "live2d" : "fbx");
       }
       setError("");
     } catch (err) {
@@ -730,6 +740,16 @@ export function SettingsPanel({ config, settings, onClose, onSaved }: Props) {
         {activeTab === "advanced" && (
           <fieldset className="settings-fieldset">
             <legend>{labels.advanced}</legend>
+            <label>
+              {labels.presentationRenderer}
+              <select
+                value={presentationRenderer}
+                onChange={(event) => setPresentationRenderer(event.target.value === "live2d" ? "live2d" : "fbx")}
+              >
+                <option value="fbx">FBX 3D</option>
+                <option value="live2d">Live2D</option>
+              </select>
+            </label>
             <div className="button-row">
               <button type="button" onClick={exportSettings}>
                 {labels.exportSettings}

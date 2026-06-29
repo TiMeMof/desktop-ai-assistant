@@ -59,6 +59,7 @@ class UserSettings(BaseModel):
             "summary_mode": "deterministic",
         }
     )
+    presentation: dict[str, Any] = Field(default_factory=lambda: {"renderer": "fbx"})
 
     @field_validator("shortcut")
     @classmethod
@@ -125,6 +126,16 @@ class UserSettings(BaseModel):
             "summary_mode": summary_mode,
         }
 
+    @field_validator("presentation")
+    @classmethod
+    def presentation_must_be_valid(cls, value: dict[str, Any]) -> dict[str, Any]:
+        merged = {"renderer": "fbx"}
+        merged.update(value or {})
+        renderer = str(merged.get("renderer") or "fbx")
+        if renderer not in {"fbx", "live2d"}:
+            raise ValueError("presentation renderer must be fbx or live2d")
+        return {"renderer": renderer}
+
 
 class SettingsUpdate(BaseModel):
     provider_id: str | None = None
@@ -135,6 +146,7 @@ class SettingsUpdate(BaseModel):
     model_overrides: dict[str, str] | None = None
     mouse_trigger: dict[str, Any] | None = None
     memory: dict[str, Any] | None = None
+    presentation: dict[str, Any] | None = None
     api_keys: dict[str, str] | None = None
     api_secrets: dict[str, str] | None = None
 
@@ -153,6 +165,8 @@ class CharacterConfig(BaseModel):
     system_prompt: str
     style_rules: list[str] = Field(default_factory=list)
     output_constraints: list[str] = Field(default_factory=list)
+    description: str = ""
+    source: str = "yaml"
 
 
 class ActionConfig(BaseModel):

@@ -1,18 +1,22 @@
 # Desktop AI Assistant TODO
 
-## P2: Desktop Shell and Live2D Readiness
+## P2: Desktop Shell and Avatar Presentation Readiness
 
 - Extract assistant runtime state from `main.tsx` into a UI-independent controller/hook.
-- Keep the Tauri bubble UI and the Electron Live2D UI as loosely coupled replaceable presentation layers while sharing daemon APIs and assistant event semantics.
-- Harden the `BroadcastChannel` event contract between the Tauri bubble and the Electron Live2D window:
+- Keep the Tauri bubble UI and the Electron avatar UI as loosely coupled replaceable presentation layers while sharing daemon APIs and assistant event semantics.
+- Harden the `BroadcastChannel` event contract between the Tauri bubble and the Electron avatar window:
   - typed `assistant_event` payload;
-  - graceful handling when the Live2D window is closed;
+  - graceful handling when the avatar window is closed;
   - optional Electron window lifecycle management from the Tauri window.
-- Add smoke coverage for Live2D Electron interactions:
+- Add smoke coverage for Electron avatar interactions:
   - single-click opens the chat primer without model call;
   - double-click runs selected quick action;
   - right-click opens settings;
   - Linux selected-text capture falls back cleanly when `xclip`/`xsel`/`wl-paste` are missing.
+- Add smoke coverage for FBX renderer startup:
+  - idle model becomes visible after `待机1.fbx` loads;
+  - one-shot mapped motions return to idle;
+  - renderer switch to Live2D still works when Live2D URLs are configured.
 - Decide whether chat sessions should persist across daemon restarts.
 
 ## P2: Agent / Computer-Control Integration
@@ -44,10 +48,10 @@
   - prefer system shortcut mapping or input-remapper;
   - avoid promising global raw mouse hooks across compositors.
 
-## P2: Live2D Cleanup
+## P2: Presentation Cleanup
 
 - Verify normal GPU-enabled Electron startup across the target Linux/NVIDIA setup; keep `live2d:electron:software` as a fallback only.
-- `frontend/public/webgl_check.html` is a temporary WebGL diagnostic page and can be removed once the Electron Live2D path is stable.
+- `frontend/public/webgl_check.html` is a temporary WebGL diagnostic page and can be removed once the Electron avatar path is stable.
 
 ## P2: Testing
 
@@ -72,7 +76,7 @@
 - Add developer scripts:
   - start daemon;
   - start Tauri frontend;
-  - start Electron Live2D window;
+  - start Electron avatar window;
   - run all checks.
 - Decide packaging strategy:
   - dev-only mode;
@@ -82,5 +86,5 @@
   - daemon request errors;
   - provider errors;
   - shortcut/mouse trigger events;
-  - Live2D window state and event delivery.
+  - avatar window state, selected renderer, and event delivery.
 - Add config migration for future `user_settings.json` schema changes.

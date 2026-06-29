@@ -1,8 +1,8 @@
-# Live2D Presentation Module
+# Electron Presentation Module
 
 ## Current Architecture
 
-Live2D rendering has been split out of the Tauri main window into a dedicated Electron window.
+Avatar rendering is split out of the Tauri main window into a dedicated Electron window. The window defaults to a Three.js FBX renderer and keeps Live2D as a selectable fallback.
 
 ```text
 Tauri main window (AI Bubble)
@@ -10,38 +10,66 @@ Tauri main window (AI Bubble)
         |
         | BroadcastChannel("assistant_events")
         v
-Electron Live2D window
+Electron avatar window
   transparent frameless always-on-top window
-  WebKit / Chromium WebGL2
-  pixi.js + pixi-live2d-display
-  local Cubism 4 model + Cubism Core
+  AvatarWindow interaction container
+  FbxAvatarRenderer (default) or Live2DRenderer
   single-click chat primer / double-click quick action / right-click settings
 ```
 
-The Tauri window keeps the main native desktop shell (global shortcut, mouse trigger, full bubble UI, chat, action stream). The Electron window renders the Live2D model, receives motion/emotion events through the browser `BroadcastChannel` API, and now also provides a compact interaction surface that calls daemon HTTP/SSE APIs directly.
+The Tauri window keeps the main native desktop shell. The Electron window renders the avatar, receives motion events through `BroadcastChannel`, and provides a compact interaction surface that calls daemon HTTP/SSE APIs directly.
+
+## Renderers
+
+- `fbx` is the default `presentation.renderer`.
+- `live2d` remains available from Settings -> Advanced -> Presentation.
+- The `npm run live2d:electron` script name is retained for compatibility, but it launches the generic avatar page.
+
+FBX motion mapping:
+
+```text
+idle / chatting -> 待机1.fbx loop
+ask             -> 蓄力出拳.fbx once
+present_result  -> 落地.fbx once
+error           -> 受击倒地.fbx once
+wave            -> 回旋踢.fbx once
+nod             -> 待机2.fbx once
+```
+
+One-shot FBX actions return to idle after playback. If an FBX action is not loaded yet, the renderer keeps idle visible while the requested file loads.
 
 ## Why Electron
 
-On Ubuntu with NVIDIA proprietary drivers, the Tauri WebKitGTK WebView fails to render Live2D textures to the GPU (WebGL 2 context is present but textures stay gray). The same HTML page renders correctly in Chromium/Electron. Therefore the model layer moved to a separate Electron window while the main app remains a Tauri window.
+On Ubuntu with NVIDIA proprietary drivers, the Tauri WebKitGTK WebView failed to render Live2D textures reliably. Chromium/Electron rendered the same page correctly. The presentation layer therefore stays in a separate Electron window while the main app remains Tauri.
 
 ## Configuration
 
-`frontend/.env` (or `.env.example`) sets the model and Cubism Core paths:
+User settings include:
+
+```text
+presentation:
+  renderer: fbx | live2d
+```
+
+Live2D additionally uses `frontend/.env` paths:
 
 ```text
 VITE_LIVE2D_MODEL_URL=/live2d/models/haru/haru_greeter_t03.model3.json
 VITE_LIVE2D_CORE_URL=/live2d/cubismcore/live2dcubismcore.min.js
 ```
 
-The core file is loaded as a dynamic script before `pixi-live2d-display` initializes the model.
+The Cubism Core file is loaded as a dynamic script before `pixi-live2d-display` initializes the model.
 
 ## Window Files
 
-- `frontend/live2d.html` — Vite entry HTML for the Live2D window.
-- `frontend/src/live2d_main.tsx` — mounts `Live2DWindow` in the second entry point.
-- `frontend/src/Live2DWindow.tsx` — React component that loads PixiJS, the Cubism Core, and the model, renders the canvas, handles single/double/right-click interaction, shows the compact chat/action bubble, and mounts `SettingsPanel`.
-- `frontend/live2d-electron/main.js` — Electron main process: creates a transparent, frameless, always-on-top window loading the local Vite dev URL; exposes selected-text/clipboard capture and focusability IPC.
-- `frontend/live2d-electron/preload.js` — exposes `window.electronAPI` drag helpers, focusability helpers, selected-text capture, clipboard read, and platform info via `contextBridge`.
+- `frontend/live2d.html` — Vite entry HTML for the Electron avatar window.
+- `frontend/src/live2d_main.tsx` — mounts `AvatarWindow` in the second entry point.
+- `frontend/src/AvatarWindow.tsx` — renderer-agnostic interaction container; listens for `assistant_event`, handles drag/click/chat/action/settings, and mounts `SettingsPanel`.
+- `frontend/src/FbxAvatarRenderer.tsx` — Three.js FBX renderer using `frontend/fbx/*.fbx`.
+- `frontend/src/Live2DRenderer.tsx` — optional Live2D renderer using PixiJS, Cubism Core, and the configured model.
+- `frontend/src/Live2DWindow.tsx` — compatibility wrapper around `AvatarWindow`.
+- `frontend/live2d-electron/main.js` — Electron main process and selected-text/clipboard/focusability IPC.
+- `frontend/live2d-electron/preload.js` — exposes `window.electronAPI` drag helpers, focusability helpers, selected-text capture, clipboard read, and platform info.
 - `frontend/live2d-electron/package.json` — Electron sub-project dependency and `npm start` script.
 
 ## Assistant Event Payload
@@ -58,24 +86,17 @@ assistant_event:
   metadata: provider/session/action context
 ```
 
-Top-level `speak_text`, `emotion`, and `motion` are retained for existing consumers. New presentation code should prefer `assistant_event`.
+Top-level `speak_text`, `emotion`, and `motion` are retained for existing consumers. Presentation code should prefer `assistant_event`.
 
 ## Synchronization
 
-`frontend/src/main.tsx` creates `BroadcastChannel("assistant_events")` and posts a message whenever an action or chat stream finishes:
+`frontend/src/main.tsx` posts a message whenever an action or chat stream finishes:
 
 ```text
 postMessage({ type: "assistant_event", payload: assistantEvent })
 ```
 
-`frontend/src/Live2DWindow.tsx` listens on the same channel and also plays events generated by its own direct action/chat calls. It maps `motion` / `emotion` to the model's motion/expression groups:
-
-```text
-ask           -> TapBody
-present_result -> Flick
-nod           -> TapHead
-wave          -> Wave
-```
+`AvatarWindow` listens on `BroadcastChannel("assistant_events")` and also plays events generated by its own direct action/chat calls. Renderers only display events; they do not call daemon APIs or read/write memory.
 
 ## Current Behavior
 
@@ -83,10 +104,8 @@ wave          -> Wave
 - Other actions return a restrained `presenting` event.
 - Chat returns a `chatting` event.
 - The Tauri main window shows suggestion buttons and can run suggested actions against the prior selected text or result.
-- Right-clicking the Tauri bubble panel opens a local menu with quick chat input and settings.
-- The Electron window shows the model centered on a transparent background and can be dragged by moving the model after pointer down.
-- Single left-click opens the Live2D bubble and inserts a local assistant primer based on clipboard text and recent local conversation.
-- Double left-click runs the currently selected quick action against selected text or clipboard fallback. The quick action can be switched between translate, explain, and polish from the Live2D bubble.
+- Single left-click opens the avatar bubble and inserts a local assistant primer based on clipboard text and recent local conversation.
+- Double left-click runs the selected quick action against selected text or clipboard fallback.
 - Right-click opens the shared settings panel inside the Electron window. Tauri-only mouse side-button recording is disabled in this context.
 - Linux selected-text capture prefers PRIMARY selection readers (`wl-paste --primary`, `xclip -selection primary -out`, `xsel --primary --output`). If none is installed, the Electron window falls back to current clipboard text and does not send `Ctrl+C`.
 
@@ -94,7 +113,7 @@ wave          -> Wave
 
 - Daemon owns deterministic event selection for completed action/chat results.
 - Tauri main window owns the full bubble UI, global shortcut, side-button trigger, and Tauri-native settings affordances.
-- Electron Live2D window owns model rendering, compact click/chat/action/settings affordances, and Electron-native clipboard/focus/window IPC.
+- Electron avatar window owns rendering, compact click/chat/action/settings affordances, and Electron-native clipboard/focus/window IPC.
 - Frontend presentation layers may call daemon HTTP/SSE APIs, but must not build model prompts, call providers directly, or mutate memory files directly.
 - `BroadcastChannel` is the cross-window presentation-event path; daemon HTTP/SSE remains the action/chat/settings path.
 - Live2D Cubism Core and model asset licenses remain separate from the wrapper package.

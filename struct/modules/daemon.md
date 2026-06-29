@@ -17,7 +17,7 @@
 - Build prompts.
 - Call model providers.
 - Stream model output.
-- Emit deterministic Live2D-ready assistant events on completed action/chat responses.
+- Emit deterministic presentation-ready assistant events on completed action/chat responses.
 - Persist settings and memory.
 - Serve memory preview and provider test APIs.
 - Maintain bounded in-memory chat sessions.
@@ -35,11 +35,13 @@
   - deterministic assistant event payloads for action/chat completion.
 
 - `daemon/assistant_daemon/schemas.py`
-  - provider/action/character/prompt/settings/request/response models.
+  - provider/action/character/prompt/settings/request/response models;
+  - user settings schema including `presentation.renderer`.
 
 - `daemon/assistant_daemon/config.py`
   - config loading;
   - user settings save;
+  - presentation renderer merge/validation through `SettingsUpdate`;
   - `.env` API key writing;
   - reserved shortcut validation.
 

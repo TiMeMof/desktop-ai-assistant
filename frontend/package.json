@@ -20,7 +20,8 @@
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.184.0"
   },
   "overrides": {
     "pixi-live2d-display": {
@@ -31,6 +32,7 @@
     "@tauri-apps/cli": "2.2.7",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^4.7.0",
     "typescript": "^5.5.4",
     "vite": "^6.4.3"

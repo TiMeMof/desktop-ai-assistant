@@ -23,7 +23,7 @@
   - structured prompt injection templates.
 
 - `config/user_settings.json`
-  - user-selected provider, model overrides, character, prompt profile, shortcut, mouse trigger, language, memory.
+  - user-selected provider, model overrides, character, prompt profile, shortcut, mouse trigger, language, memory, presentation renderer.
 
 - `.env`
   - API keys and provider secrets.
@@ -52,6 +52,8 @@ The daemon returns only safe API key/secret status booleans, never secret values
   - disabled;
   - `button=8`;
   - `consume=true`.
+- Default presentation:
+  - `renderer=fbx`.
 
 ## Validation
 
@@ -67,3 +69,4 @@ Current validation includes:
 - recent turns are between `0..100`;
 - mouse button is between `8..12`;
 - language is one of the supported UI/output language IDs.
+- presentation renderer is either `fbx` or `live2d`.

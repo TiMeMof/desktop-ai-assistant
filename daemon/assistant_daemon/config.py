@@ -50,6 +50,32 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
+def load_skill_markdown(path: Path) -> tuple[dict[str, Any], str]:
+    if not path.exists():
+        raise ConfigError(f"Missing skill file: {path}")
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return {}, text.strip()
+    lines = text.splitlines()
+    for index in range(1, len(lines)):
+        if lines[index].strip() == "---":
+            frontmatter_text = "\n".join(lines[1:index])
+            body = "\n".join(lines[index + 1 :]).strip()
+            frontmatter = yaml.safe_load(frontmatter_text) or {}
+            if not isinstance(frontmatter, dict):
+                raise ConfigError(f"Skill frontmatter must contain a mapping: {path}")
+            return frontmatter, body
+    return {}, text.strip()
+
+
+def markdown_title(markdown: str, fallback: str) -> str:
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("# "):
+            return stripped[2:].strip() or fallback
+    return fallback
+
+
 class Settings:
     def __init__(self, config_root: Path = CONFIG_ROOT) -> None:
         self.config_root = config_root
@@ -63,7 +89,7 @@ class Settings:
             provider.id: provider
             for provider in (ProviderConfig.model_validate(item) for item in provider_data.get("providers", []))
         }
-        self.characters = self._load_dir(config_root / "characters", CharacterConfig)
+        self.characters = self._load_characters()
         self.actions = self._load_dir(config_root / "actions", ActionConfig)
         self.prompt_profiles = self._load_dir(config_root / "prompt_injections", PromptInjectionConfig)
         self.user_settings = self._load_user_settings()
@@ -83,6 +109,50 @@ class Settings:
         if not items:
             raise ConfigError(f"No config files found in {path}")
         return items
+
+    def _load_characters(self) -> dict[str, CharacterConfig]:
+        characters = self._load_dir(self.config_root / "characters", CharacterConfig)
+        for character_id, character in self._load_skill_characters(self.project_root / "skills").items():
+            if character_id in characters:
+                raise ConfigError(f"Skill character id conflicts with YAML character id: {character_id}")
+            characters[character_id] = character
+        return characters
+
+    def _load_skill_characters(self, skills_root: Path) -> dict[str, CharacterConfig]:
+        if not skills_root.exists():
+            return {}
+
+        characters: dict[str, CharacterConfig] = {}
+        for skill_file in sorted(skills_root.glob("*/SKILL.md")):
+            frontmatter, body = load_skill_markdown(skill_file)
+            skill_id = str(frontmatter.get("name") or skill_file.parent.name).strip()
+            if not skill_id:
+                raise ConfigError(f"Skill name must not be blank: {skill_file}")
+            description = str(frontmatter.get("description") or "").strip()
+            title = markdown_title(body, skill_id)
+            system_prompt = "\n\n".join(
+                part
+                for part in [
+                    "You are using a local character skill as the active desktop-assistant persona.",
+                    f"Skill id: {skill_id}",
+                    f"Skill description:\n{description}" if description else "",
+                    (
+                        "Follow the skill instructions below when they apply. If the skill asks for browsing, "
+                        "tool use, or private facts that are unavailable in this desktop assistant context, "
+                        "state uncertainty instead of inventing information."
+                    ),
+                    f"<skill>\n{body}\n</skill>",
+                ]
+                if part
+            )
+            characters[skill_id] = CharacterConfig(
+                id=skill_id,
+                name=title,
+                system_prompt=system_prompt,
+                description=description,
+                source="skill",
+            )
+        return characters
 
     def _validate_defaults(self) -> None:
         defaults = self.app.get("defaults", {})
@@ -136,6 +206,12 @@ class Settings:
                 if key in update.memory:
                     memory[key] = update.memory[key]
             current["memory"] = memory
+        if update.presentation is not None:
+            presentation = dict(current.get("presentation") or {})
+            for key in ("renderer",):
+                if key in update.presentation:
+                    presentation[key] = update.presentation[key]
+            current["presentation"] = presentation
         if update.model_overrides is not None:
             merged = dict(current.get("model_overrides") or {})
             for provider_id, model in update.model_overrides.items():
@@ -269,7 +345,10 @@ class Settings:
                 }
                 for provider in self.providers.values()
             ],
-            "characters": [{"id": item.id, "name": item.name} for item in self.characters.values()],
+            "characters": [
+                {"id": item.id, "name": item.name, "description": item.description, "source": item.source}
+                for item in self.characters.values()
+            ],
             "prompt_profiles": [
                 {"id": item.id, "name": item.name, "description": item.description}
                 for item in self.prompt_profiles.values()

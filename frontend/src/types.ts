@@ -22,6 +22,7 @@ export type NamedItem = {
   name: string;
   label?: string;
   description?: string;
+  source?: string;
 };
 
 export type ConfigSummary = {
@@ -48,6 +49,7 @@ export type UserSettings = {
   model_overrides: Record<string, string>;
   mouse_trigger: MouseTriggerSettings;
   memory: MemorySettings;
+  presentation: PresentationSettings;
   api_key_status: Record<string, boolean>;
   api_secret_status: Record<string, boolean>;
 };
@@ -65,6 +67,10 @@ export type MemorySettings = {
   summary_mode: "deterministic" | "model";
 };
 
+export type PresentationSettings = {
+  renderer: "fbx" | "live2d";
+};
+
 export type SettingsUpdate = {
   provider_id?: string;
   character_id?: string;
@@ -74,6 +80,7 @@ export type SettingsUpdate = {
   model_overrides?: Record<string, string>;
   mouse_trigger?: Partial<MouseTriggerSettings>;
   memory?: Partial<MemorySettings>;
+  presentation?: Partial<PresentationSettings>;
   api_keys?: Record<string, string>;
   api_secrets?: Record<string, string>;
 };
@@ -106,6 +113,7 @@ export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   streaming?: boolean;
+  suggestions?: AssistantSuggestion[];
 };
 
 export type AssistantSuggestion = {

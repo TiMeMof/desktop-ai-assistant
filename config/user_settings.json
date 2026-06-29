@@ -1,6 +1,6 @@
 {
   "provider_id": "deepseek",
-  "character_id": "maid",
+  "character_id": "liangzi-perspective",
   "prompt_profile_id": "default",
   "shortcut": "Ctrl+Space",
   "language": "zh-CN",
@@ -14,8 +14,11 @@
   },
   "memory": {
     "enabled": true,
-    "max_context_tokens": 3000,
+    "max_context_tokens": 1000,
     "recent_turns": 10,
     "summary_mode": "deterministic"
+  },
+  "presentation": {
+    "renderer": "fbx"
   }
 }

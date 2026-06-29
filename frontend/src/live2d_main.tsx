@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Live2DWindow } from "./Live2DWindow";
+import { AvatarWindow } from "./AvatarWindow";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <Live2DWindow />
+  <AvatarWindow />
 );

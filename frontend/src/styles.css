@@ -611,6 +611,7 @@ select:disabled,
   padding: 0 10px;
 }
 
+.avatar-window,
 .live2d-window {
   position: relative;
   width: 100vw;
@@ -621,11 +622,13 @@ select:disabled,
   background: transparent;
 }
 
+.avatar-window canvas,
 .live2d-window canvas {
   max-width: 100%;
   max-height: 100%;
 }
 
+.avatar-window-fallback,
 .live2d-window-fallback {
   padding: 20px;
   color: #64748b;
@@ -637,9 +640,11 @@ select:disabled,
   left: 14px;
   right: 14px;
   bottom: 14px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  max-height: min(300px, calc(100vh - 28px));
+  height: min(390px, calc(100vh - 28px));
+  min-height: 210px;
   padding: 10px;
   border: 1px solid rgba(148, 163, 184, 0.55);
   border-radius: 8px;
@@ -649,6 +654,7 @@ select:disabled,
 }
 
 .live2d-chat-bubble header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -704,12 +710,13 @@ select:disabled,
 }
 
 .live2d-chat-messages {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 44px;
-  max-height: 112px;
+  min-height: 0;
   overflow: auto;
+  padding-right: 2px;
 }
 
 .live2d-action-result {
@@ -802,6 +809,7 @@ select:disabled,
 }
 
 .live2d-chat-error {
+  flex: 0 0 auto;
   padding: 7px 8px;
   border: 1px solid #fecdd3;
   border-radius: 7px;
@@ -811,6 +819,7 @@ select:disabled,
 }
 
 .live2d-chat-composer {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr 36px;
   gap: 8px;
