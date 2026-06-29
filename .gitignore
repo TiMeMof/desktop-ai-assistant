@@ -9,3 +9,5 @@ src-tauri/target/
 .env
 debug/
 data/memory/*
+frontend/fbx/*.fbx
+fbx/
